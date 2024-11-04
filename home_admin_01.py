@@ -23,7 +23,7 @@ def home_admin():
 
     # Titre et slogan
     # st.markdown("<h1 style='text-align: center; color: #004d99;'>Migration Data Hub</h1>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center; color: #0066cc;'>Votre portail pour explorer, analyser et visualiser les données migratoires.</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #0066cc;'>Your portal to explore, analyze and visualize migration data.</h2>", unsafe_allow_html=True)
 
     # # Menu de navigation
     # menu = st.sidebar.selectbox("Autres", ["À propos", "Contact"])
