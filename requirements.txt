@@ -9,7 +9,7 @@ pyspark==3.3.2
 folium==0.14.0
 streamlit-folium==0.10.0
 matplotlib==3.7.1
-seaborn==0.12.2
+seaborn== 0.13.2
 sklearn==1.2.0
 statsmodels==0.13.5
 plotly==5.14.0
@@ -17,3 +17,4 @@ numerize==1.0
 geopandas==0.12.2
 requests==2.31.0
 streamlit-keycloak==0.1.4
+scikit-learn==1.5.1
