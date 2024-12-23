@@ -9,17 +9,16 @@ from PIL import Image
 import plotly.express as px
 from streamlit_option_menu import option_menu
 import os
-from data_management import main
-from main_app_map import main2
-from prediction import predict_migrant
-from visualisation import visualize
+from archive.data_management import main
+from archive.main_app_map import main2
+from archive.visualisation import visualize
 from api_ui import open_api_migrate
 from bson import ObjectId
 
 # This home is the home after login succesfullly
 def home_admin():
     # Chargement de l'image de fond
-    image = Image.open("img7.jpg")
+    image = Image.open("assets/img/img7.jpg")
 
     # Titre et slogan
     # st.markdown("<h1 style='text-align: center; color: #004d99;'>Migration Data Hub</h1>", unsafe_allow_html=True)

@@ -5,30 +5,18 @@ import pandas as pd
 from bson.objectid import ObjectId
 from streamlit_option_menu import option_menu
 from PIL import Image
-from dataclasses import asdict
-from streamlit_keycloak import login
-import streamlit as st
 from home_admin_01 import home_admin
-from factors_data import consult_data, charger_fichier_factors
-from spatiale import consulation_spatiale,upload_file_spatiale 
+from factors_data import consult_data
+from spatiale import consulation_spatiale
 from api_ui import open_api_migrate
-import warnings
-import pandas as pd
-import pyspark
-from pyspark.sql import SparkSession
-import streamlit as st
 import folium
 from folium.plugins import MarkerCluster
 from streamlit_folium import folium_static
-import streamlit as st
-import os
-import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import folium
-from streamlit_folium import folium_static
-from pyspark.sql import SparkSession
-from streamlit_option_menu import option_menu
+from streamlit_keycloak import login
+from prediction import main
+from request_data import home_request
 
 
 
@@ -103,59 +91,52 @@ st.markdown("""
 
 
 
+# Define required columns for different data types
+required_columns_mapping = {
+    "Migration Data": ['Year', 'Location', 'Origin', 'Region', 'Investment', 'Type', 'Destination', 'Age Group', 'Education Level', 'Rating', 'Migrants', 'raisons'],
+    "Factors Data": ['year', 'factor', 'type', 'location', 'valeur'],
+    "Spatiale Data": ['Year', 'From_Country', 'To_Country', 'Migrants', 'Latitude_From', 'Longitude_From','Latitude_To', 'Longitude_To']
+}
 
-
-
-
-
-
-
-# Colonnes requises
-required_columns = ['Year', 'Location', 'Origin', 'Region', 'Investment', 'Type', 'Destination', 'Age Group', 'Education Level', 'Rating', 'Migrants', 'raisons']
-
-# Fonctionnalité 1: Charger un fichier
+# Function to load file to MongoDB
 def charger_fichier():
-    st.header("Charger un fichier")
-    uploaded_file = st.file_uploader("Choisir un fichier CSV ou Excel", type=["csv", "xlsx"])
+    st.header("Upload a File")
+    uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
+    type_fichier = st.selectbox("Data Type", list(required_columns_mapping.keys()))
 
-    type_fichier = st.selectbox("Data type",["Migration Data","Spatiale Data", "Factors Data"])
-
-    # if type_fichier == "Factors Data":
-    #     charger_fichier_factors()
-    if type_fichier == "Spatiale Data":
-        upload_file_spatiale()
-    else:
-
-        auteur = st.text_input("Auteur")
-        description = st.text_area("Description")
-        date_chargement = st.date_input("Date de chargement", datetime.now())
-        date_fin = st.date_input("Date de fin")
-        visibilite = st.selectbox("Visibilité", ["Public", "Privé"])
+    auteur = st.text_input("Author")
+    description = st.text_area("Description")
+    date_chargement = st.date_input("Loading Date", datetime.now())
+    date_fin = st.date_input("End Date")
+    visibilite = st.selectbox("Visibility", ["Public", "Private"])
+    
+    if uploaded_file is not None:
+        if uploaded_file.name.endswith('.csv'):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_excel(uploaded_file)
         
-        if uploaded_file is not None:
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.read_excel(uploaded_file)
-            
-            # Vérifier si les colonnes requises sont présentes
-            if all(column in df.columns for column in required_columns):
-                st.success("Le fichier contient toutes les colonnes requises.")
+        # Get required columns for the selected type
+        required_columns = required_columns_mapping[type_fichier]
+
+        # Check if required columns are present
+        if all(column in df.columns for column in required_columns):
+            st.success("The file contains all required columns.")
                               
-                if st.button("Enregistrer"):
-                    metadata = {
-                        "type_fichier": type_fichier,
-                        "auteur": auteur,
-                        "description": description,
-                        "date_chargement": date_chargement.strftime("%Y-%m-%d"),
-                        "date_fin": date_fin.strftime("%Y-%m-%d"),
-                        "visibilite": visibilite,
-                        "data": df.to_dict(orient="records")
-                    }
-                    metadata_collection.insert_one(metadata)
-                    st.success("Fichier enregistré avec succès!")
-            else:
-                st.error("Le fichier ne contient pas toutes les colonnes requises.")
+            if st.button("Save"):
+                metadata = {
+                    "type_fichier": type_fichier,
+                    "auteur": auteur,
+                    "description": description,
+                    "date_chargement": date_chargement.strftime("%Y-%m-%d"),
+                    "date_fin": date_fin.strftime("%Y-%m-%d"),
+                    "visibilite": visibilite,
+                    "data": df.to_dict(orient="records")
+                }
+                metadata_collection.insert_one(metadata)
+                st.success("File uploaded successfully!")
+        else:
+            st.error("The file does not contain all required columns.")
 
 
 
@@ -236,6 +217,7 @@ def supprimer_fichier():
     if fichier_choisi and st.button("Supprimer"):
         metadata_collection.delete_one({"_id": ObjectId(fichier_choisi[1])})
         st.success("Fichier supprimé avec succès!")
+
 
 # Function to list all files in MongoDB with a delete link
 def list_files_to_delete():
@@ -448,7 +430,7 @@ def consulter_donnees():
 # Function to display the welcome page
 def display_welcome_page():
     # Load the background image
-    image = Image.open("img5.jpg")
+    image = Image.open("assets/img/img5.jpg")
 
     # Title and slogan
     st.markdown("<h1 style='text-align: center; color: #004d99;'>Migration Data Hub</h1>", unsafe_allow_html=True)
@@ -748,6 +730,82 @@ def handle_spatial_data_visualization(fichier):
         st.warning("Aucune donnée disponible pour cette visualisation.")
 
 
+
+# Function to update file details
+def details_mettre_a_jour_fichier(file_id_up):
+    fichier = metadata_collection.find_one({"_id": ObjectId(file_id_up)})
+    
+    if not fichier:
+        st.error("Fichier non trouvé.")
+        return
+    
+    query_params1 = st.experimental_get_query_params()
+    file_id_up = query_params1.get("file_id_up")
+
+    if file_id_up:
+        fichier = metadata_collection.find_one({"_id": ObjectId(file_id_up[0])})
+        
+        if fichier:
+            st.header("Update the selected file")
+            
+            # Prefill form fields with the file's current data
+            type_fichier = st.text_input("Type de fichier", fichier.get("type_fichier", ""))
+            auteur = st.text_input("Auteur", fichier.get("auteur", ""))
+            description = st.text_area("Description", fichier.get("description", ""))
+            date_chargement = st.date_input("Date de chargement", datetime.strptime(fichier["date_chargement"], "%Y-%m-%d"))
+            date_fin = st.date_input("Date de fin", datetime.strptime(fichier.get("date_fin", datetime.now().strftime("%Y-%m-%d")), "%Y-%m-%d"))
+            visibilite = st.selectbox("Visibilité", ["Public", "Privé"], index=["Public", "Privé"].index(fichier.get("visibilite", "Public")))
+
+            # Upload new data file
+            uploaded_file = st.file_uploader("Choisir un fichier CSV ou Excel pour mise à jour", type=["csv", "xlsx"])
+            if uploaded_file is not None:
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file)
+                else:
+                    df = pd.read_excel(uploaded_file)
+
+                # Check for required columns
+                required_columns = ["Year", "Migrants"]  # Example required columns
+                if all(column in df.columns for column in required_columns):
+                    st.success("Le fichier contient toutes les colonnes requises.")
+                    
+                    if st.button("Mettre à jour"):
+                        # Update document in MongoDB
+                        metadata_collection.update_one(
+                            {"_id": ObjectId(file_id_up[0])},
+                            {"$set": {
+                                "type_fichier": type_fichier,
+                                "auteur": auteur,
+                                "description": description,
+                                "date_chargement": date_chargement.strftime("%Y-%m-%d"),
+                                "date_fin": date_fin.strftime("%Y-%m-%d"),
+                                "visibilite": visibilite,
+                                "data": df.to_dict(orient="records")
+                            }}
+                        )
+                        st.success("Fichier mis à jour avec succès!")
+                else:
+                    st.error("Le fichier ne contient pas toutes les colonnes requises.")
+            else:
+                if st.button("Mettre à jour sans changer de fichier"):
+                    # Update metadata only, without new file
+                    metadata_collection.update_one(
+                        {"_id": ObjectId(file_id_up[0])},
+                        {"$set": {
+                            "type_fichier": type_fichier,
+                            "auteur": auteur,
+                            "description": description,
+                            "date_chargement": date_chargement.strftime("%Y-%m-%d"),
+                            "date_fin": date_fin.strftime("%Y-%m-%d"),
+                            "visibilite": visibilite
+                        }}
+                    )
+                    st.success("Fichier mis à jour avec succès!")
+                if st.button("Retour"):
+                    st.experimental_set_query_params()
+
+
+
 # Function to list all files in MongoDB with an update link
 def list_files_to_update():
     fichiers = list(metadata_collection.find())
@@ -758,8 +816,9 @@ def list_files_to_update():
 
     # Create an "Update" link with the file ID in the query string
     fichiers_df['Update'] = fichiers_df["_id"].apply(
-        lambda id: f'<a href="?file_id_1={id}" target="_self" class="update-link">📝 Update</a>'
+        lambda id: f'<a href="?file_id_up={id}" target="_self" class="update-link">📝 Update</a>'
     )
+    
 
     # Display the table with custom styling and HTML links
     st.write("""
@@ -812,80 +871,8 @@ def list_files_to_update():
         unsafe_allow_html=True
     )
     query_params = st.experimental_get_query_params()
-    if "file_id_1" in query_params:
-        details_mettre_a_jour_fichier(query_params["file_id_1"][0])
-
-# Function to update file details
-def details_mettre_a_jour_fichier(file_id_1):
-    fichier = metadata_collection.find_one({"_id": ObjectId(file_id_1)})
-    
-    if not fichier:
-        st.error("Fichier non trouvé.")
-        return
-    
-    query_params1 = st.experimental_get_query_params()
-    file_id_1 = query_params1.get("file_id_1")
-
-    if file_id_1:
-        fichier = metadata_collection.find_one({"_id": ObjectId(file_id_1[0])})
-        
-        if fichier:
-            st.header("Update the selected file")
-            
-            # Prefill form fields with the file's current data
-            type_fichier = st.text_input("Type de fichier", fichier.get("type_fichier", ""))
-            auteur = st.text_input("Auteur", fichier.get("auteur", ""))
-            description = st.text_area("Description", fichier.get("description", ""))
-            date_chargement = st.date_input("Date de chargement", datetime.strptime(fichier["date_chargement"], "%Y-%m-%d"))
-            date_fin = st.date_input("Date de fin", datetime.strptime(fichier.get("date_fin", datetime.now().strftime("%Y-%m-%d")), "%Y-%m-%d"))
-            visibilite = st.selectbox("Visibilité", ["Public", "Privé"], index=["Public", "Privé"].index(fichier.get("visibilite", "Public")))
-
-            # Upload new data file
-            uploaded_file = st.file_uploader("Choisir un fichier CSV ou Excel pour mise à jour", type=["csv", "xlsx"])
-            if uploaded_file is not None:
-                if uploaded_file.name.endswith('.csv'):
-                    df = pd.read_csv(uploaded_file)
-                else:
-                    df = pd.read_excel(uploaded_file)
-
-                # Check for required columns
-                required_columns = ["Year", "Migrants"]  # Example required columns
-                if all(column in df.columns for column in required_columns):
-                    st.success("Le fichier contient toutes les colonnes requises.")
-                    
-                    if st.button("Mettre à jour"):
-                        # Update document in MongoDB
-                        metadata_collection.update_one(
-                            {"_id": ObjectId(file_id_1[0])},
-                            {"$set": {
-                                "type_fichier": type_fichier,
-                                "auteur": auteur,
-                                "description": description,
-                                "date_chargement": date_chargement.strftime("%Y-%m-%d"),
-                                "date_fin": date_fin.strftime("%Y-%m-%d"),
-                                "visibilite": visibilite,
-                                "data": df.to_dict(orient="records")
-                            }}
-                        )
-                        st.success("Fichier mis à jour avec succès!")
-                else:
-                    st.error("Le fichier ne contient pas toutes les colonnes requises.")
-            else:
-                if st.button("Mettre à jour sans changer de fichier"):
-                    # Update metadata only, without new file
-                    metadata_collection.update_one(
-                        {"_id": ObjectId(file_id_1[0])},
-                        {"$set": {
-                            "type_fichier": type_fichier,
-                            "auteur": auteur,
-                            "description": description,
-                            "date_chargement": date_chargement.strftime("%Y-%m-%d"),
-                            "date_fin": date_fin.strftime("%Y-%m-%d"),
-                            "visibilite": visibilite
-                        }}
-                    )
-                    st.success("Fichier mis à jour avec succès!")
-
+    if "file_id_up" in query_params:
+        details_mettre_a_jour_fichier(query_params["file_id_up"][0])
 
 
 
@@ -1053,7 +1040,7 @@ def liste_fichiers():
 
     # Create a column with "Voir détails" links using HTML and query parameters
     fichiers_df['Voir détails'] = fichiers_df["_id"].apply(
-        lambda id: f'<a href="?file_id={id}" target="_self" class="details-link">Voir détails</a>'
+        lambda id: f'<a href="?file_id={id}" target="_self" class="details-link">🔍Voir détails</a>'
     )
 
     # Display the table using st.write with the HTML-rendered links
@@ -1119,8 +1106,8 @@ def sidebar_menu():
     with st.sidebar:
         selected = option_menu(
             menu_title="Connexion",
-            options=["Welcome", "View Data","Login"],
-            icons=["house","table","box-arrow-in-right"],
+            options=["Welcome", "View Data","Request","Sign In"],
+            icons=["house","table","database","box-arrow-in-right"],
             default_index=1,  # Set default to "Welcome"
             orientation="vertical"
         )
@@ -1131,23 +1118,9 @@ def sidebar_menu():
 #******************************************************************************************************************************
 #**********************************************************************************************************************************
 
-
-def welcome_msg2():
-    
-    query_params = st.experimental_get_query_params()
-    if "file_id" in query_params:
-        file_id = query_params["file_id"][0]
-        afficher_details_fichier(file_id)
-    else:
-        selected_option = sidebar_menu()
-        
-        if selected_option == "View Data":
-            liste_fichiers()
-        elif selected_option == "Welcome":
-            display_welcome_page()
-        # elif selected_option == "Login":
-        #     main2()
-             
+#***********************************************************************************************************************************
+#******************************************************************************************************************************
+#**********************************************************************************************************************************  
 
 # def logout():
 #     if st.button("Disconnect"):
@@ -1212,9 +1185,17 @@ def logout_user():
 def welcome_msg():
     
     query_params = st.experimental_get_query_params()
+
+    # Check if the "file_id" is present to show file details
     if "file_id" in query_params:
         file_id = query_params["file_id"][0]
-        afficher_details_fichier(file_id)
+        afficher_details_fichier(file_id)  # Show file details
+
+    # Check if the "file_id_up" is present to show file update form
+    elif "file_id_up" in query_params:
+        file_id_up = query_params["file_id_up"][0]
+        details_mettre_a_jour_fichier(file_id_up)  # Show update form
+
     else:
         selected_option = sidebar_menu()
         
@@ -1222,31 +1203,23 @@ def welcome_msg():
             liste_fichiers()
         elif selected_option == "Welcome":
             display_welcome_page()
-        elif selected_option== "Login":
+        elif selected_option =="Request":
+            home_request()
+        elif selected_option== "Sign In":
             # Bouton pour afficher le formulaire de connexion
+            keycloak = login(
+                    url="http://localhost:8080",
+                    realm="humanmigration",
+                    client_id="humanmigration",
+                )
+            # if st.button("Disconnect"):
+            #     keycloak.authenticated = False
+            
             if st.button("Se connecter"):
                 st.session_state["show_login"] = True
                 # st.experimental_rerun()
 
-             
-# # Fonction pour afficher le message de bienvenue
-# def welcome_msg3():
-#     st.title("Bienvenue dans l'application")
-#     st.write("""
-#         Cette application vous permet de gérer vos données de manière efficace.
-#         Utilisez le menu de gauche pour naviguer à travers les différentes fonctionnalités.
-#     """)
-#     st.write("### Fonctionnalités")
-#     st.write("- Charger des données")
-#     st.write("- Mettre à jour des données")
-#     st.write("- Supprimer des données")
-#     st.write("- Accéder à l'API")
-#     st.write("- Faire des prédictions")
-    
-#     # Bouton pour afficher le formulaire de connexion
-#     if st.button("Se connecter"):
-#         st.session_state["show_login"] = True
-#         # st.experimental_rerun()
+            
 
 # Affiche le message de bienvenue ou le formulaire de connexion
 if not is_authenticated():
@@ -1285,10 +1258,11 @@ else:
     elif choix == "🔍 API":
         open_api_migrate()
     elif choix == "🔍 Prediction":
-        st.write("Prédiction")
+        # st.write("Prédiction")
+        main()
     elif choix == "Logout":
         logout_user()
-        st.experimental_rerun()  # Rafraîchir pour mettre à jour l'état
+        # st.experimental_rerun()  # Rafraîchir pour mettre à jour l'état
 
 
 
@@ -1369,8 +1343,3 @@ else:
 #     elif choix == "Logout":
 #         logout_user()
 #         st.experimental_rerun()  # Rafraîchir pour mettre à jour l'état
-
-
-
-        
-

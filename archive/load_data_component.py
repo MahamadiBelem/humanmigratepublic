@@ -8,7 +8,7 @@ from PIL import Image
 from dataclasses import asdict
 from streamlit_keycloak import login
 import streamlit as st
-from home_admin_01 import home_admin
+
 
 
 # Connexion à MongoDB
@@ -341,8 +341,7 @@ def details_mettre_a_jour_fichier(file_id):
                     st.success("Fichier mis à jour avec succès!")
 
 # Pour tester la liste des fichiers à mettre à jour
-list_files_to_update()
-
+charger_fichier_up()
 # Tester la mise à jour des détails du fichier si un ID de fichier est fourni
 query_params = st.experimental_get_query_params()
 if "file_id" in query_params:
