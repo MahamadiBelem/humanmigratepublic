@@ -12,7 +12,7 @@ matplotlib==3.7.1
 seaborn== 0.13.2
 statsmodels==0.13.5
 plotly==5.14.0
-numerize==1.0
+numerize==0.12
 geopandas==0.12.2
 requests==2.31.0
 streamlit-keycloak==0.1.4
