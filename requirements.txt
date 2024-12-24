@@ -4,7 +4,7 @@ pandas==1.5.3
 datetime==4.3
 bcrypt==4.0.1
 streamlit-option-menu==0.3.1
-Pillow==9.5.0
+Pillow==10.4.0
 pyspark==3.3.2
 folium==0.14.0
 streamlit-folium==0.10.0
@@ -12,7 +12,6 @@ matplotlib==3.7.1
 seaborn== 0.13.2
 statsmodels==0.13.5
 plotly==5.14.0
-numerize==0.12
 geopandas==0.12.2
 requests==2.31.0
 streamlit-keycloak==0.1.4
