@@ -8,24 +8,15 @@ from PIL import Image
 from dataclasses import asdict
 from streamlit_keycloak import login
 import streamlit as st
-from home_admin_01 import home_admin
 from factors_data import consult_data
 from spatiale import consulation_spatiale,upload_file_spatiale 
 import warnings
-
-
-import streamlit as st
 import folium
 from folium.plugins import MarkerCluster
-from streamlit_folium import folium_static
-import streamlit as st
-import os
-import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import folium
 from streamlit_folium import folium_static
-from streamlit_option_menu import option_menu
+
 
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
