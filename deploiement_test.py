@@ -5,10 +5,9 @@ import pandas as pd
 from bson.objectid import ObjectId
 from streamlit_option_menu import option_menu
 from PIL import Image
-from dataclasses import asdict
 import streamlit as st
 from factors_data import consult_data
-from spatiale import consulation_spatiale,upload_file_spatiale 
+from spatiale import consulation_spatiale
 import warnings
 import folium
 from folium.plugins import MarkerCluster
@@ -124,107 +123,107 @@ st.markdown("""
 # Colonnes requises
 required_columns = ['Year', 'Location', 'Origin', 'Region', 'Investment', 'Type', 'Destination', 'Age Group', 'Education Level', 'Rating', 'Migrants', 'raisons']
 
-# Fonctionnalité 1: Charger un fichier
-def charger_fichier():
-    st.header("Charger un fichier")
-    uploaded_file = st.file_uploader("Choisir un fichier CSV ou Excel", type=["csv", "xlsx"])
+# # Fonctionnalité 1: Charger un fichier
+# def charger_fichier():
+#     st.header("Charger un fichier")
+#     uploaded_file = st.file_uploader("Choisir un fichier CSV ou Excel", type=["csv", "xlsx"])
 
-    type_fichier = st.selectbox("Data type",["Migration Data","Spatiale Data", "Factors Data"])
+#     type_fichier = st.selectbox("Data type",["Migration Data","Spatiale Data", "Factors Data"])
 
-    # if type_fichier == "Factors Data":
-    #     charger_fichier_factors()
-    if type_fichier == "Spatiale Data":
-        upload_file_spatiale()
-    else:
+#     # if type_fichier == "Factors Data":
+#     #     charger_fichier_factors()
+#     if type_fichier == "Spatiale Data":
+#         upload_file_spatiale()
+#     else:
 
-        auteur = st.text_input("Auteur")
-        description = st.text_area("Description")
-        date_chargement = st.date_input("Date de chargement", datetime.now())
-        date_fin = st.date_input("Date de fin")
-        visibilite = st.selectbox("Visibilité", ["Public", "Privé"])
+#         auteur = st.text_input("Auteur")
+#         description = st.text_area("Description")
+#         date_chargement = st.date_input("Date de chargement", datetime.now())
+#         date_fin = st.date_input("Date de fin")
+#         visibilite = st.selectbox("Visibilité", ["Public", "Privé"])
         
-        if uploaded_file is not None:
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.read_excel(uploaded_file)
+#         if uploaded_file is not None:
+#             if uploaded_file.name.endswith('.csv'):
+#                 df = pd.read_csv(uploaded_file)
+#             else:
+#                 df = pd.read_excel(uploaded_file)
             
-            # Vérifier si les colonnes requises sont présentes
-            if all(column in df.columns for column in required_columns):
-                st.success("Le fichier contient toutes les colonnes requises.")
+#             # Vérifier si les colonnes requises sont présentes
+#             if all(column in df.columns for column in required_columns):
+#                 st.success("Le fichier contient toutes les colonnes requises.")
                               
-                if st.button("Enregistrer"):
-                    metadata = {
-                        "type_fichier": type_fichier,
-                        "auteur": auteur,
-                        "description": description,
-                        "date_chargement": date_chargement.strftime("%Y-%m-%d"),
-                        "date_fin": date_fin.strftime("%Y-%m-%d"),
-                        "visibilite": visibilite,
-                        "data": df.to_dict(orient="records")
-                    }
-                    metadata_collection.insert_one(metadata)
-                    st.success("Fichier enregistré avec succès!")
-            else:
-                st.error("Le fichier ne contient pas toutes les colonnes requises.")
+#                 if st.button("Enregistrer"):
+#                     metadata = {
+#                         "type_fichier": type_fichier,
+#                         "auteur": auteur,
+#                         "description": description,
+#                         "date_chargement": date_chargement.strftime("%Y-%m-%d"),
+#                         "date_fin": date_fin.strftime("%Y-%m-%d"),
+#                         "visibilite": visibilite,
+#                         "data": df.to_dict(orient="records")
+#                     }
+#                     metadata_collection.insert_one(metadata)
+#                     st.success("Fichier enregistré avec succès!")
+#             else:
+#                 st.error("Le fichier ne contient pas toutes les colonnes requises.")
 
 
 
-def mettre_a_jour_fichier():
-    st.header("Mettre à jour un fichier")
+# def mettre_a_jour_fichier():
+#     st.header("Mettre à jour un fichier")
     
-    # Récupérer les fichiers
-    fichiers = list(metadata_collection.find())
+#     # Récupérer les fichiers
+#     fichiers = list(metadata_collection.find())
     
-    # Créer une liste d'IDs personnalisés
-    fichier_ids = []
-    for index, fichier in enumerate(fichiers, start=1):
-        auteur = fichier.get("auteur", "inconnu")
-        annee = datetime.now().year
-        id_personnalise = f"{auteur}_{annee}_{index:04d}"
-        fichier_ids.append((id_personnalise, str(fichier["_id"])))
+#     # Créer une liste d'IDs personnalisés
+#     fichier_ids = []
+#     for index, fichier in enumerate(fichiers, start=1):
+#         auteur = fichier.get("auteur", "inconnu")
+#         annee = datetime.now().year
+#         id_personnalise = f"{auteur}_{annee}_{index:04d}"
+#         fichier_ids.append((id_personnalise, str(fichier["_id"])))
     
-    # Afficher les IDs personnalisés dans le selectbox
-    fichier_choisi = st.selectbox("Choisir un fichier à mettre à jour", fichier_ids, format_func=lambda x: x[0])
+#     # Afficher les IDs personnalisés dans le selectbox
+#     fichier_choisi = st.selectbox("Choisir un fichier à mettre à jour", fichier_ids, format_func=lambda x: x[0])
     
-    if fichier_choisi:
-        fichier = metadata_collection.find_one({"_id": ObjectId(fichier_choisi[1])})
-        type_fichier = st.text_input("Type de fichier", fichier["type_fichier"])
-        auteur = st.text_input("Auteur", fichier["auteur"])
-        description = st.text_area("Description", fichier["description"])
-        date_chargement = st.date_input("Date de chargement", datetime.strptime(fichier["date_chargement"], "%Y-%m-%d"))
-        date_fin = st.date_input("Date de fin", datetime.strptime(fichier["date_fin"], "%Y-%m-%d"))
-        visibilite = st.selectbox("Visibilité", ["Public", "Privé"], index=["Public", "Privé"].index(fichier["visibilite"]))
+#     if fichier_choisi:
+#         fichier = metadata_collection.find_one({"_id": ObjectId(fichier_choisi[1])})
+#         type_fichier = st.text_input("Type de fichier", fichier["type_fichier"])
+#         auteur = st.text_input("Auteur", fichier["auteur"])
+#         description = st.text_area("Description", fichier["description"])
+#         date_chargement = st.date_input("Date de chargement", datetime.strptime(fichier["date_chargement"], "%Y-%m-%d"))
+#         date_fin = st.date_input("Date de fin", datetime.strptime(fichier["date_fin"], "%Y-%m-%d"))
+#         visibilite = st.selectbox("Visibilité", ["Public", "Privé"], index=["Public", "Privé"].index(fichier["visibilite"]))
         
-        uploaded_file = st.file_uploader("Choisir un fichier CSV ou Excel pour mise à jour", type=["csv", "xlsx"])
+#         uploaded_file = st.file_uploader("Choisir un fichier CSV ou Excel pour mise à jour", type=["csv", "xlsx"])
         
-        if uploaded_file is not None:
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.read_excel(uploaded_file)
+#         if uploaded_file is not None:
+#             if uploaded_file.name.endswith('.csv'):
+#                 df = pd.read_csv(uploaded_file)
+#             else:
+#                 df = pd.read_excel(uploaded_file)
             
-            # Vérifier si les colonnes requises sont présentes
-            required_columns = ["Year", "Migrants"]  # Exemple de colonnes requises
-            if all(column in df.columns for column in required_columns):
-                st.success("Le fichier contient toutes les colonnes requises.")
+#             # Vérifier si les colonnes requises sont présentes
+#             required_columns = ["Year", "Migrants"]  # Exemple de colonnes requises
+#             if all(column in df.columns for column in required_columns):
+#                 st.success("Le fichier contient toutes les colonnes requises.")
                 
-                if st.button("Mettre à jour"):
-                    metadata_collection.update_one(
-                        {"_id": ObjectId(fichier_choisi[1])},
-                        {"$set": {
-                            "type_fichier": type_fichier,
-                            "auteur": auteur,
-                            "description": description,
-                            "date_chargement": date_chargement.strftime("%Y-%m-%d"),
-                            "date_fin": date_fin.strftime("%Y-%m-%d"),
-                            "visibilite": visibilite,
-                            "data": df.to_dict(orient="records")
-                        }}
-                    )
-                    st.success("Fichier mis à jour avec succès!")
-            else:
-                st.error("Le fichier ne contient pas toutes les colonnes requises.")
+#                 if st.button("Mettre à jour"):
+#                     metadata_collection.update_one(
+#                         {"_id": ObjectId(fichier_choisi[1])},
+#                         {"$set": {
+#                             "type_fichier": type_fichier,
+#                             "auteur": auteur,
+#                             "description": description,
+#                             "date_chargement": date_chargement.strftime("%Y-%m-%d"),
+#                             "date_fin": date_fin.strftime("%Y-%m-%d"),
+#                             "visibilite": visibilite,
+#                             "data": df.to_dict(orient="records")
+#                         }}
+#                     )
+#                     st.success("Fichier mis à jour avec succès!")
+#             else:
+#                 st.error("Le fichier ne contient pas toutes les colonnes requises.")
 
 
 
@@ -232,27 +231,27 @@ def mettre_a_jour_fichier():
 
 
 
-def consulter_donnees_tab():
-    st.header("Consulter les données")
+# def consulter_donnees_tab():
+#     st.header("Consulter les données")
     
-    # Récupérer les fichiers
-    fichiers = list(metadata_collection.find())
+#     # Récupérer les fichiers
+#     fichiers = list(metadata_collection.find())
     
-    # Créer une liste d'IDs personnalisés
-    fichier_ids = []
-    for index, fichier in enumerate(fichiers, start=1):
-        auteur = fichier.get("auteur", "inconnu")
-        annee = datetime.now().year
-        id_personnalise = f"{auteur}_{annee}_{index:04d}"
-        fichier_ids.append((id_personnalise, str(fichier["_id"])))
+#     # Créer une liste d'IDs personnalisés
+#     fichier_ids = []
+#     for index, fichier in enumerate(fichiers, start=1):
+#         auteur = fichier.get("auteur", "inconnu")
+#         annee = datetime.now().year
+#         id_personnalise = f"{auteur}_{annee}_{index:04d}"
+#         fichier_ids.append((id_personnalise, str(fichier["_id"])))
     
-    # Afficher les IDs personnalisés dans le selectbox
-    fichier_choisi = st.selectbox("Choisir un fichier à consulter", fichier_ids, format_func=lambda x: x[0])
+#     # Afficher les IDs personnalisés dans le selectbox
+#     fichier_choisi = st.selectbox("Choisir un fichier à consulter", fichier_ids, format_func=lambda x: x[0])
     
-    if fichier_choisi:
-        fichier = metadata_collection.find_one({"_id": ObjectId(fichier_choisi[1])})
-        df = pd.DataFrame(fichier["data"])
-        st.write(df)
+#     if fichier_choisi:
+#         fichier = metadata_collection.find_one({"_id": ObjectId(fichier_choisi[1])})
+#         df = pd.DataFrame(fichier["data"])
+#         st.write(df)
 
 
 

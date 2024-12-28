@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import pyspark
 from pyspark.sql import SparkSession
 import streamlit as st
 import folium
