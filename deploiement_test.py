@@ -7,7 +7,6 @@ from streamlit_option_menu import option_menu
 from PIL import Image
 import streamlit as st
 from factors_data import consult_data
-from spatiale import consulation_spatiale
 import warnings
 import folium
 from folium.plugins import MarkerCluster
@@ -274,7 +273,7 @@ def consulter_donnees():
 
     
     if file_option == 'Spatiale Data':
-        consulation_spatiale()
+        st.write("En cours ...")
     elif file_option == 'Factors Data':
         consult_data()
     elif file_option == "Migration Data":
