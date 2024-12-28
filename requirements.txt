@@ -1,6 +1,5 @@
 pymongo==4.4.0
 streamlit-option-menu==0.3.1
-streamlit-keycloak==0.1.4
 folium==0.14.0
 streamlit-folium==0.10.0
 matplotlib==3.7.1

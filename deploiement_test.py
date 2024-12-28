@@ -6,7 +6,6 @@ from bson.objectid import ObjectId
 from streamlit_option_menu import option_menu
 from PIL import Image
 from dataclasses import asdict
-from streamlit_keycloak import login
 import streamlit as st
 from factors_data import consult_data
 from spatiale import consulation_spatiale,upload_file_spatiale 
@@ -95,26 +94,29 @@ st.markdown("""
 
 
 
-def main():
-    st.subheader(f" {keycloak.user_info.get('preferred_username', 'User')}!")
-    # st.write(asdict(keycloak))
-    if st.button("Disconnect"):
-        keycloak.authenticated = False
+# def main():
+#     # st.subheader(f" {keycloak.user_info.get('preferred_username', 'User')}!")
+#     # # st.write(asdict(keycloak))
+#     # if st.button("Disconnect"):
+#     #     keycloak.authenticated = False
 
 
 
-keycloak = login(
-    url="http://localhost:8080",
-    realm="humanmigration",
-    client_id="humanmigration",
-)
+# # keycloak = login(
+# #     url="http://localhost:8080",
+# #     realm="humanmigration",
+# #     client_id="humanmigration",
+# # )
 
-if keycloak.authenticated:
-    # st.write(keycloak.user_info)  # Debugging line
-    st.write("Authentication success.")
-    main()
-else:
-    st.write("Sign In !")
+# # if keycloak.authenticated:
+# #     # st.write(keycloak.user_info)  # Debugging line
+# #     st.write("Authentication success.")
+# #     main()
+# # else:
+# #     st.write("Sign In !")
+
+
+# main()
 
 
 
@@ -924,9 +926,8 @@ def welcome_msg():
         #     main2()
              
 
-# Appel de la fonction
-if not keycloak.authenticated:
-    welcome_msg()
+
+welcome_msg()
 
 
 
