@@ -30,7 +30,7 @@ MONGO_URI = os.getenv('MONGO__uri')  # Notez le double underscore ici
 
 # Connexion à MongoDB
 client = pymongo.MongoClient(MONGO_URI)
-db = client['test_finale_db']
+db = client['test_finale_db1']
 metadata_collection = db['metadata']
 
 
@@ -899,6 +899,17 @@ def liste_fichiers():
     # Retrieve all files from the collection
     fichiers = list(metadata_collection.find())
 
+    # Vérifier si des fichiers sont récupérés
+    # Vérifier si des fichiers sont récupérés
+    if not fichiers:
+        st.markdown("""
+        <div style="background-color: #f2dede; border: 1px solid #e0b0b0; border-radius: 5px; padding: 20px; text-align: center; margin-top: 30px;">
+            <h4 style="color: #a94442; font-weight: bold;">Aucune donnée disponible</h4>
+            <p style="color: #a94442;">Il n'y a actuellement aucun fichier dans la base de données. Merci de réessayer plus tard.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+
     # Convert the list of files into a DataFrame
     fichiers_df = pd.DataFrame(fichiers, columns=["_id", "type_fichier", "auteur", "date_chargement", "description", "visibilite"])
 
@@ -1061,7 +1072,7 @@ def welcome_msg():
         
         if selected_option == "View Data":
             liste_fichiers()
-            charger_fichier()
+            # charger_fichier()
         elif selected_option == "Welcome":
             display_welcome_page()
         elif selected_option =="Request":
