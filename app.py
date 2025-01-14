@@ -888,7 +888,7 @@ def list_files_to_update():
 
 def liste_fichiers():
     st.subheader("Available Dataset")
-    st.write("""
+    st.write("""  
         <div style="background-color: #3498db; padding: 7px;">
             <h3 style="color: white; text-align: center;">
                 View Different Data from institutions and researchers around the world
@@ -896,85 +896,93 @@ def liste_fichiers():
         </div>
     """, unsafe_allow_html=True)
 
-    # Retrieve all files from the collection
-    fichiers = list(metadata_collection.find())
+    try:
+        # Tentative de récupération des fichiers depuis la collection
+        fichiers = list(metadata_collection.find())
+        
+        # Vérifier si des fichiers sont récupérés
+        if not fichiers:
+            st.markdown("""
+            <div style="background-color: #f2dede; border: 1px solid #e0b0b0; border-radius: 5px; padding: 20px; text-align: center; margin-top: 30px;">
+                <h4 style="color: #a94442; font-weight: bold;">Aucune donnée disponible</h4>
+                <p style="color: #a94442;">Il n'y a actuellement aucun fichier dans la base de données. Merci de réessayer plus tard.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            return
+        
+        # Convertir la liste des fichiers en DataFrame
+        fichiers_df = pd.DataFrame(fichiers, columns=["_id", "type_fichier", "auteur", "date_chargement", "description", "visibilite"])
 
-    # Vérifier si des fichiers sont récupérés
-    # Vérifier si des fichiers sont récupérés
-    if not fichiers:
-        st.markdown("""
+        # Supprimer l'ObjectId de MongoDB pour simplifier l'affichage
+        fichiers_df["_id"] = fichiers_df["_id"].apply(str)
+
+        # Créer une colonne avec des liens "Voir détails" en utilisant HTML et paramètres de requête
+        fichiers_df['Voir détails'] = fichiers_df["_id"].apply(
+            lambda id: f'<a href="?file_id={id}" target="_self" class="details-link">🔍Voir détails</a>'
+        )
+
+        # Afficher le tableau avec les liens rendus en HTML
+        st.write("""
+            <div class="table-container">
+                {table}
+            </div>
+        """.format(table=fichiers_df[['type_fichier', 'auteur', 'date_chargement', 'description', 'visibilite', 'Voir détails']].to_html(escape=False, index=False)), unsafe_allow_html=True)
+
+        # Ajouter le CSS pour le style
+        st.markdown(
+            """
+            <style>
+            .table-container {
+                display: flex;
+                justify-content: center;
+                margin: 20px;
+            }
+            .table-container table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 25px 0;
+                font-size: 18px;
+                min-width: 400px;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            }
+            .table-container th, .table-container td {
+                padding: 12px 15px;
+            }
+            .table-container th {
+                background-color: #009879;
+                color: #ffffff;
+                text-align: center;
+            }
+            .table-container td {
+                text-align: center;
+                border-bottom: 1px solid #dddddd;
+            }
+            .table-container tr:nth-of-type(even) {
+                background-color: #f3f3f3;
+            }
+            .table-container tr:hover {
+                background-color: #f1f1f1;
+            }
+            .details-link {
+                color: #007bff;
+                text-decoration: none;
+                font-weight: bold;
+            }
+            .details-link:hover {
+                color: #0056b3;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+    except Exception as e:
+        # Si une exception survient (par exemple, la collection n'est pas trouvée)
+        st.markdown(f"""
         <div style="background-color: #f2dede; border: 1px solid #e0b0b0; border-radius: 5px; padding: 20px; text-align: center; margin-top: 30px;">
-            <h4 style="color: #a94442; font-weight: bold;">Aucune donnée disponible</h4>
-            <p style="color: #a94442;">Il n'y a actuellement aucun fichier dans la base de données. Merci de réessayer plus tard.</p>
+            <h4 style="color: #a94442; font-weight: bold;">Erreur de connexion à la base de données</h4>
+            <p style="color: #a94442;">Une erreur est survenue lors de la récupération des données. Veuillez vérifier la connexion à la base de données et réessayer.</p>
+            <p style="color: #a94442;">Détails de l'erreur: {str(e)}</p>
         </div>
         """, unsafe_allow_html=True)
-        return
-
-    # Convert the list of files into a DataFrame
-    fichiers_df = pd.DataFrame(fichiers, columns=["_id", "type_fichier", "auteur", "date_chargement", "description", "visibilite"])
-
-    # Remove the MongoDB ObjectId for simplicity in display
-    fichiers_df["_id"] = fichiers_df["_id"].apply(str)
-
-    # Create a column with "Voir détails" links using HTML and query parameters
-    fichiers_df['Voir détails'] = fichiers_df["_id"].apply(
-        lambda id: f'<a href="?file_id={id}" target="_self" class="details-link">🔍Voir détails</a>'
-    )
-
-    # Display the table using st.write with the HTML-rendered links
-    st.write("""
-        <div class="table-container">
-            {table}
-        </div>
-    """.format(table=fichiers_df[['type_fichier', 'auteur', 'date_chargement', 'description', 'visibilite', 'Voir détails']].to_html(escape=False, index=False)), unsafe_allow_html=True)
-
-    # Add the CSS for styling
-    st.markdown(
-        """
-        <style>
-        .table-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px;
-        }
-        .table-container table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 25px 0;
-            font-size: 18px;
-            min-width: 400px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-        }
-        .table-container th, .table-container td {
-            padding: 12px 15px;
-        }
-        .table-container th {
-            background-color: #009879;
-            color: #ffffff;
-            text-align: center;
-        }
-        .table-container td {
-            text-align: center;
-            border-bottom: 1px solid #dddddd;
-        }
-        .table-container tr:nth-of-type(even) {
-            background-color: #f3f3f3;
-        }
-        .table-container tr:hover {
-            background-color: #f1f1f1;
-        }
-        .details-link {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .details-link:hover {
-            color: #0056b3;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
 
 
 
@@ -984,12 +992,13 @@ def sidebar_menu():
     with st.sidebar:
         selected = option_menu(
             menu_title="Connexion",
-            options=["Welcome", "View Data","Request","Sign In"],
-            icons=["house","table","database","box-arrow-in-right"],
-            default_index=1,  # Set default to "Welcome"
+            options=["Welcome", "View Data", "Request", "Sign In"],
+            icons=["house", "table", "database", "box-arrow-in-right"],
+            default_index=0,  # Changez ici pour "Welcome" en index 0
             orientation="vertical"
         )
     return selected
+
 
   
 
