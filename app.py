@@ -25,13 +25,16 @@ import pymongo
 # Connexion à MongoDB
 # client = MongoClient("mongodb://localhost:27017/")
 
-# Récupérer l'URI MongoDB des secrets
-MONGO_URI = os.getenv('MONGO__uri')  # Notez le double underscore ici
+MONGO_URI = "mongodb+srv://admin:admin@<cluster-url>/test_finale_db?retryWrites=true&w=majority"
 
-# Connexion à MongoDB
-client = pymongo.MongoClient(MONGO_URI)
-db = client['test_finale_db1']
-metadata_collection = db['metadata']
+try:
+    # Connexion à MongoDB
+    client = pymongo.MongoClient(MONGO_URI)
+    db = client['test_finale_db1']  # Votre base de données
+    metadata_collection = db['metadata']
+    print("Connexion réussie à MongoDB Atlas.")
+except Exception as e:
+    print(f"Erreur lors de la connexion à MongoDB : {str(e)}")
 
 
 
