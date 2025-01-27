@@ -21,7 +21,7 @@ import os
 import pymongo
 
 
-
+st.set_page_config(page_title="Migration Data Hub",page_icon="🌍", layout="wide")
 # Connexion à MongoDB
 # client = MongoClient("mongodb://localhost:27017/")
 
@@ -69,19 +69,13 @@ try:
 
 except Exception as e:
     # Autres erreurs générales
-    st.write(f"Erreur lors de la récupération des données : {str(e)}")
-    st.write("Veuillez vérifier les logs pour plus de détails.")
-
-
-# ****************************************************************************************
-# *****************************************************************************************
-# # This is the global part to be appear in all page. It's follow with marque css design
-# # Configuration de la page
-
-
-st.set_page_config(page_title="Migration Data Hub",page_icon="🌍", layout="wide")
-
-st.markdown("""
+    # st.markdown("""
+    # <div style="background-color: #dff0d8; border: 1px solid #d0e9c6; border-radius: 5px; padding: 20px; text-align: center; margin-top: 30px;">
+    #     <h4 style="color: #3c763d; font-weight: bold;">Succès</h4>
+    #     <p style="color: #3c763d;">Les données ont été correctement chargées et sont maintenant disponibles. Merci de votre patience!</p>
+    # </div>
+    # """, unsafe_allow_html=True)
+    st.markdown("""
     <style>
         div.block-container {
             padding: 1%; /* Remove default padding */
@@ -133,6 +127,17 @@ st.markdown("""
         <span>Welcome to the Big Data Management System!</span>
     </div>
 """, unsafe_allow_html=True)
+
+
+    # st.write(f"Erreur lors de la récupération des données : {str(e)}")
+    # st.write("Veuillez vérifier les logs pour plus de détails.")
+
+
+# ****************************************************************************************
+# *****************************************************************************************
+# # This is the global part to be appear in all page. It's follow with marque css design
+# # Configuration de la page
+
 
 
 
