@@ -27,7 +27,7 @@ import pymongo
 
 # MONGO_URI = "mongodb+srv://admin:admin@cluster.mongodb.net/test_finale_db?retryWrites=true&w=majority"
 # MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net//test_finale_db?retryWrites=true&w=majority"
-MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_finale_db?retryWrites=true&w=majority"
+MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_finale_db13?retryWrites=true&w=majority"
 
 
 # try:
