@@ -79,7 +79,7 @@ except Exception as e:
 # # Configuration de la page
 
 
-st.set_page_config(page_title="Migration Data Hub",page_icon="🌍", layout="wide")
+# st.set_page_config(page_title="Migration Data Hub",page_icon="🌍", layout="wide")
 
 st.markdown("""
     <style>
