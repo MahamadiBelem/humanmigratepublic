@@ -26,9 +26,9 @@ import pymongo
 # client = MongoClient("mongodb://localhost:27017/")
 
 
-# MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_finale_db?retryWrites=true&w=majority"
+MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_finale_db?retryWrites=true&w=majority"
 
-MONGO_URI = "mongodb://192.168.10.17:27017/test_finale_db"
+# MONGO_URI = "mongodb://192.168.10.17:27017/test_finale_db"
 # MONGO_URI = "mongodb://postgres:Belem@2023@192.168.10.17:27017/test_finale_db"
 # try:
 #     # Connexion à MongoDB
@@ -79,7 +79,7 @@ except Exception as e:
 # # Configuration de la page
 
 
-# st.set_page_config(page_title="Migration Data Hub",page_icon="🌍", layout="wide")
+st.set_page_config(page_title="Migration Data Hub",page_icon="🌍", layout="wide")
 
 st.markdown("""
     <style>
