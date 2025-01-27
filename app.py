@@ -23,11 +23,11 @@ import pymongo
 
 
 # Connexion à MongoDB
-# client = MongoClient("mongodb://localhost:27017/")
+MONGO_URI  = MongoClient("mongodb://localhost:27017/")
 
 # MONGO_URI = "mongodb+srv://admin:admin@cluster.mongodb.net/test_finale_db?retryWrites=true&w=majority"
 # MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net//test_finale_db?retryWrites=true&w=majority"
-MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_finale_db13?retryWrites=true&w=majority"
+# MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_test?retryWrites=true&w=majority"
 
 
 # try:
