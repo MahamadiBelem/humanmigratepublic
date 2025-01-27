@@ -25,17 +25,52 @@ import pymongo
 # Connexion à MongoDB
 # client = MongoClient("mongodb://localhost:27017/")
 
-MONGO_URI = "mongodb+srv://admin:admin@<cluster-url>/test_finale_db?retryWrites=true&w=majority"
+
+# MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_finale_db?retryWrites=true&w=majority"
+
+MONGO_URI = "mongodb://192.168.10.17:27017/test_finale_db"
+# MONGO_URI = "mongodb://postgres:Belem@2023@192.168.10.17:27017/test_finale_db"
+# try:
+#     # Connexion à MongoDB
+#     client = pymongo.MongoClient(MONGO_URI)
+#     db = client['test_finale_db1']  # Votre base de données
+#     metadata_collection = db['metadata']
+#     print("Connexion réussie à MongoDB Atlas.")
+# except Exception as e:
+#     print(f"Erreur lors de la connexion à MongoDB : {str(e)}")
+
+
+
+
 
 try:
-    # Connexion à MongoDB
+    # Connexion à MongoDB Atlas
     client = pymongo.MongoClient(MONGO_URI)
-    db = client['test_finale_db1']  # Votre base de données
-    metadata_collection = db['metadata']
-    print("Connexion réussie à MongoDB Atlas.")
-except Exception as e:
-    print(f"Erreur lors de la connexion à MongoDB : {str(e)}")
+    db = client['test_finale_db']  # Votre base de données
+    metadata_collection = db['metadata']  # Collection
 
+    # Si la connexion réussit, on affiche un message et on peut récupérer des données
+    st.write("Connexion réussie à MongoDB Atlas.")
+    
+    # Essayez de récupérer des fichiers depuis la collection (par exemple)
+    fichiers = list(metadata_collection.find())
+    
+    # Vérifier si des fichiers sont récupérés
+    if not fichiers:
+        st.markdown("""
+        <div style="background-color: #f2dede; border: 1px solid #e0b0b0; border-radius: 5px; padding: 20px; text-align: center; margin-top: 30px;">
+            <h4 style="color: #a94442; font-weight: bold;">Aucune donnée disponible</h4>
+            <p style="color: #a94442;">Il n'y a actuellement aucun fichier dans la base de données. Merci de réessayer plus tard.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.write(fichiers)  # Affichez les fichiers récupérés (ou affichez les données sous forme plus structurée)
+
+
+except Exception as e:
+    # Autres erreurs générales
+    st.write(f"Erreur lors de la récupération des données : {str(e)}")
+    st.write("Veuillez vérifier les logs pour plus de détails.")
 
 
 # ****************************************************************************************
