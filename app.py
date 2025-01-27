@@ -25,11 +25,11 @@ import pymongo
 # Connexion à MongoDB
 # client = MongoClient("mongodb://localhost:27017/")
 
-
+# MONGO_URI = "mongodb+srv://admin:admin@cluster.mongodb.net/test_finale_db?retryWrites=true&w=majority"
+# MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net//test_finale_db?retryWrites=true&w=majority"
 MONGO_URI = "mongodb+srv://admin:admin@cluster0.bv3xx.mongodb.net/test_finale_db?retryWrites=true&w=majority"
 
-# MONGO_URI = "mongodb://192.168.10.17:27017/test_finale_db"
-# MONGO_URI = "mongodb://postgres:Belem@2023@192.168.10.17:27017/test_finale_db"
+
 # try:
 #     # Connexion à MongoDB
 #     client = pymongo.MongoClient(MONGO_URI)
